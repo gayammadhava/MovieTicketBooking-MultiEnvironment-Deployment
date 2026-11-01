@@ -373,3 +373,27 @@ Project: MovieTicketBooking – Multi-Environment CI/CD Deployment
 
 **Project Summary:** This project demonstrates an end-to-end CI/CD implementation for a Java web application using GitHub Actions, Maven, Apache Tomcat, Git, and AWS EC2, with automated deployments across DEV, TEST, PRE-PROD, and PROD environments.
 
+---
+
+
+# 17. Project Screenshots
+
+## 1. CI/CD Architecture & Multi-Environment Deployment
+
+![CI/CD Architecture](images/architecture.png)
+
+## 2. GitHub Actions Workflow
+
+![GitHub Actions](images/github-actions.png)
+
+## 3. Maven Build Success
+
+![Maven Build](images/maven-build.png)
+
+## 4. Tomcat Deployment
+
+![Tomcat Deployment](images/tomcat-deployment.png)
+
+## 5. Movie Ticket Booking Application
+
+![Movie Ticket Booking Application](images/application.png)
