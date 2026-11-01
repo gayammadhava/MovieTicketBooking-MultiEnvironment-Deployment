@@ -4,7 +4,7 @@ name: CI/CD for Staging Branch
 on:
   push:
     branches:
-      - Stagging
+      - stagging
 
   workflow_dispatch:
 
