@@ -43,29 +43,98 @@ Whenever developers push code to a configured Git branch, GitHub Actions automat
 
 ## 4. Project Architecture
 
-Developer  
-↓  
-GitHub Repository  
-↓  
-Git Branches  
-↓  
-GitHub Actions  
-↓  
-Source Code Checkout  
-↓  
-Java 17 Setup  
-↓  
-Maven Build  
-↓  
-WAR File Generation  
-↓  
-WAR File Verification  
-↓  
-Tomcat Manager API  
-↓  
-Environment-Specific Tomcat Server  
-↓  
-Application Deployment
+### 4.1 High-Level CI/CD Architecture
+
+The project follows a branch-based deployment architecture. Each Git branch is connected to a separate GitHub Actions workflow and deployment environment.
+
+```mermaid
+flowchart TD
+    A[Developer] --> B[GitHub Repository]
+
+    B --> C1[Develop Branch]
+    B --> C2[stagging Branch]
+    B --> C3[pre-prod Branch]
+    B --> C4[main Branch]
+
+    C1 --> D1[DEV GitHub Actions]
+    C2 --> D2[TEST GitHub Actions]
+    C3 --> D3[PRE-PROD GitHub Actions]
+    C4 --> D4[PROD GitHub Actions]
+
+    D1 --> E1[Checkout Source Code]
+    D2 --> E2[Checkout Source Code]
+    D3 --> E3[Checkout Source Code]
+    D4 --> E4[Checkout Source Code]
+
+    E1 --> F1[Java 17 Setup]
+    E2 --> F2[Java 17 Setup]
+    E3 --> F3[Java 17 Setup]
+    E4 --> F4[Java 17 Setup]
+
+    F1 --> G1[Maven Build and Test]
+    F2 --> G2[Maven Build and Test]
+    F3 --> G3[Maven Build and Test]
+    F4 --> G4[Maven Build and Test]
+
+    G1 --> H1[WAR File Generation]
+    G2 --> H2[WAR File Generation]
+    G3 --> H3[WAR File Generation]
+    G4 --> H4[WAR File Generation]
+
+    H1 --> I1[DEV EC2 - Tomcat]
+    H2 --> I2[TEST EC2 - Tomcat]
+    H3 --> I3[PRE-PROD EC2 - Tomcat]
+    H4 --> I4[PROD EC2 - Tomcat]
+
+    I1 --> J1[DEV Application]
+    I2 --> J2[TEST Application]
+    I3 --> J3[PRE-PROD Application]
+    I4 --> J4[PROD Application]
+```
+
+### 4.2 Deployment Architecture Explanation
+
+**Developer Layer**
+- Developers write and modify Java application code.
+- Changes are committed and pushed to GitHub.
+
+**Source Code Management Layer**
+- GitHub maintains the application source code.
+- Separate branches represent different deployment environments.
+
+**CI/CD Layer**
+- GitHub Actions automatically triggers workflows.
+- Each workflow checks out the source code.
+- Java 17 is configured.
+- Maven compiles, tests, and packages the application.
+
+**Build Layer**
+- Maven generates the WAR file.
+- The pipeline verifies the generated artifact.
+- Deployment proceeds only after a successful build.
+
+**Deployment Layer**
+- GitHub Actions connects to the appropriate AWS EC2 instance using SSH.
+- The WAR file is uploaded through the Tomcat Manager Text API.
+- Tomcat deploys or updates the application.
+
+**Application Layer**
+- Each environment runs an independent Tomcat instance.
+- Users access the application through the respective environment URL.
+
+### 4.3 Individual Environment Architecture
+
+```mermaid
+flowchart TD
+    A[GitHub Actions] --> B[SSH Connection]
+    B --> C[AWS EC2 - Ubuntu Linux]
+    C --> D[Apache Tomcat 9]
+    D --> E[MovieTicketBooking.war]
+    E --> F[Running Java Web Application]
+    F --> G[Users / Browser]
+```
+
+This deployment architecture is repeated independently for DEV, TEST, PRE-PROD, and PROD.
 
 ## 5. Multi-Environment Strategy
 
@@ -80,13 +149,33 @@ This project uses four separate Git branches and four GitHub deployment environm
 
 ### Deployment Flow
 
-Developer → Develop → DEV
-
-Develop → stagging → TEST
-
-stagging → pre-prod → PRE-PROD
-
-pre-prod → main → PROD
+```text
+Developer
+   |
+   v
+Develop Branch
+   |
+   v
+DEV Environment
+   |
+   v
+stagging Branch
+   |
+   v
+TEST Environment
+   |
+   v
+pre-prod Branch
+   |
+   v
+PRE-PROD Environment
+   |
+   v
+main Branch
+   |
+   v
+PROD Environment
+```
 
 Each branch triggers its corresponding GitHub Actions workflow.
 
@@ -105,10 +194,19 @@ MovieTicketBooking-MultiEnvironment-Deployment/
 ├── MovieTicketBooking/
 │   ├── pom.xml
 │   └── src/
-│       └── main/
+│       ├── main/
+│       │   ├── java/
+│       │   └── webapp/
 │       └── test/
 │
-└── README.md
+├── README.md
+│
+└── images/
+    ├── architecture.png
+    ├── github-actions.png
+    ├── maven-build.png
+    ├── tomcat-deployment.png
+    └── application.png
 ```
 
 ## 7. CI/CD Pipeline Explanation
@@ -156,6 +254,7 @@ Java 17 is configured using the setup-java action.
 Maven compiles the application, runs configured tests, and verifies the project.
 
 ```bash
+cd MovieTicketBooking
 mvn -B clean verify
 ```
 
@@ -165,6 +264,7 @@ After a successful build, verify that the WAR file exists.
 
 ```bash
 ls -lh target/
+
 test -f target/MovieTicketBooking.war
 ```
 
@@ -258,6 +358,7 @@ Example Tomcat configuration:
 
 ```xml
 <role rolename="manager-script"/>
+
 <user username="deploy"
       password="CHANGE_THIS_PASSWORD"
       roles="manager-script"/>
@@ -371,10 +472,11 @@ Project: MovieTicketBooking – Multi-Environment CI/CD Deployment
 
 ---
 
-**Project Summary:** This project demonstrates an end-to-end CI/CD implementation for a Java web application using GitHub Actions, Maven, Apache Tomcat, Git, and AWS EC2, with automated deployments across DEV, TEST, PRE-PROD, and PROD environments.
+**Project Summary:**
+
+This project demonstrates an end-to-end CI/CD implementation for a Java web application using GitHub Actions, Maven, Apache Tomcat, Git, and AWS EC2, with automated deployments across DEV, TEST, PRE-PROD, and PROD environments.
 
 ---
-
 
 # 17. Project Screenshots
 
